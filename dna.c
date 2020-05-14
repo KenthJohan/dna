@@ -8,13 +8,69 @@
 #include "iupcbs.h"
 
 #include "csc/csc_malloc_file.h"
+#include "csc/csc_tcol.h"
 
 //http://oregonstate.edu/instruct/bb331/lecture02/lecture02.html
 
-static Ihandle* create_matrix(void)
+#define CODON_START "atg"
+#define CODON_STOP1 "taa"
+#define CODON_STOP2 "tag"
+#define CODON_STOP3 "tga"
+
+void highlight (char const * dna)
+{
+	char const * p = dna;
+	while (p[0])
+	{
+		if (memcmp (p, CODON_START, 3) == 0)
+		{
+			fputs (TCOL (TCOL_NORMAL, TCOL_GREEN, TCOL_DEFAULT), stdout);
+			fwrite (p, sizeof (char), 3, stdout);
+			fputs (TCOL_RST, stdout);
+			p += 3;
+		}
+		else if (memcmp (p, CODON_STOP1, 3) == 0)
+		{
+			fputs (TCOL (TCOL_NORMAL, TCOL_RED, TCOL_DEFAULT), stdout);
+			fwrite (p, sizeof (char), 3, stdout);
+			fputs (TCOL_RST, stdout);
+			p += 3;
+		}
+		else if (memcmp (p, CODON_STOP2, 3) == 0)
+		{
+			fputs (TCOL (TCOL_NORMAL, TCOL_RED, TCOL_DEFAULT), stdout);
+			fwrite (p, sizeof (char), 3, stdout);
+			fputs (TCOL_RST, stdout);
+			p += 3;
+		}
+		else if (memcmp (p, CODON_STOP3, 3) == 0)
+		{
+			fputs (TCOL (TCOL_NORMAL, TCOL_RED, TCOL_DEFAULT), stdout);
+			fwrite (p, sizeof (char), 3, stdout);
+			fputs (TCOL_RST, stdout);
+			p += 3;
+		}
+		else
+		{
+			putc (p[0], stdout);
+			p += 1;
+		}
+		if (((uintptr_t)p & 31) == 0)
+		{
+			putc ('\n', stdout);
+		}
+		else if (((uintptr_t)p & 7) == 0)
+		{
+			putc (' ', stdout);
+		}
+	}
+}
+
+static Ihandle* create_matrix (void)
 {
 	char * dna = csc_malloc_file ("../dna/sars.txt");
-	puts (dna);
+	highlight (dna);
+	fflush (stdout);
 
 	Ihandle* mat = IupMatrix(NULL);
 	IupSetAttribute(mat, "NUMLIN", "4");
